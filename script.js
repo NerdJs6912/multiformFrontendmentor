@@ -1,6 +1,6 @@
 const steps = document.querySelectorAll(".stp"); //get all steps
 const circleSteps = document.querySelectorAll(".step"); //get all step circles
-const formInputs = document.querySelectorAll(".step-1 form inputs"); //get step-1 inputs
+const formInputs = document.querySelectorAll(".step-1 form input"); //get step-1 inputs
 const plans = document.querySelectorAll(".plan-card"); //get all the plans
 const switcher = document.querySelector(".switch"); //get the switcher
 const addons = document.querySelectorAll(".box"); //get all the addons
@@ -15,9 +15,9 @@ const obj = {
   price: null,
 };
 
-eps.forEach((step) =>{
-  const nextBtn = document.querySelector(".next-stp");
-  const prevBtn = document.querySelector(".prev-stp");
+steps.forEach((step) =>{
+  const nextBtn = step.querySelector(".next-stp");
+  const prevBtn = step.querySelector(".prev-stp");
   if (prevBtn) {
     prevBtn.addEventListener("click", () => {
       document.querySelector(`.step-${currentStep}`).style.display = "none";
@@ -34,7 +34,7 @@ eps.forEach((step) =>{
       currentCircle++;
       setTotal()
     }
-    document.querySelector(`step-${currentStep}`).style.display = "flex";
+    document.querySelector(`.step-${currentStep}`).style.display = "flex";
     circleSteps[currentCircle].classList.add("active");
     summary(obj)
   })
@@ -52,10 +52,10 @@ function validateForm() {
       valid = false;
       formInputs[i].classList.add('err');
       findLabel(formInputs[i]).nextElementSibling.style.display = "flex";
-    }else {
+    } else {
       valid = true;
       formInputs[i].classList.remove("err");
-      findLabel(formInputs[i].nextElementSibling.style.display = "none");
+      findLabel(formInputs[i]).nextElementSibling.style.display = "none";
     }
   }
   return valid;
@@ -95,13 +95,71 @@ switcher.addEventListener("click", () => {
 addons.forEach((addon) => {
   addon.addEventListener("click", (e) => {
     const addonSelect = addon.querySelector("input");
-    const ID = adddon.getAttribute(data-id);
+    const ID = adddon.getAttribute("data-id");
     if (addonSelect.checked) {
-      adddon.classList.remove("ad-selected");
+      addonSelect.checked = false;
+      addon.classList.remove("ad-selected");
       showAddon(ID, false);
     } else {
       addonSelect.checked = true;
-      
+      addon.classList.add("ad-selected");
+      showAddon(addon, true);
+      e.preventDefault()
     }
   })
 })
+
+function switchPrice(checked) {
+  const yearlyPrice = [90, 120, 150];
+  const monthlyPrice = [9, 12, 15];
+  const prices = document.querySelectorAll(".plan-priced");
+  if (checked) {
+    prices[0].innerHTML = `$${yearlyPrice[0]}/yr`;
+    prices[1].innerHTML = `$${yearlyPrice[1]}/yr`;
+    prices[2].innerHTML = `$${yearlyPrice[2]}/yr`;
+    setTime(true);
+  } else {
+    prices[0].innerHTML = `$${monthlyPrice[0]}/mo`;
+    prices[1].innerHTML = `$${monthlyPrice[1]}/mo`;
+    prices[2].innerHTML = `$${monthlyPrice[2]}/mo`;
+    setTime(false);
+  }
+}
+
+function showAddon(ad, val) {
+  const temp = document.getElementsByTagName("template")[0];
+  const clone = temp.content.cloneNode(true);
+  const serviceName = clone.querySelector(".service-name");
+  const servicePrice = clone.querySelector(".service-price");
+  const serviceID = clone.querySelector(".selected-addon");
+  if (ad && val) {
+    serviceName.innerText = ad.querySelector("label").innerText;
+    servicePrice.innerText = ad.querySelector(".price").innerText;
+    serviceID.setAttribute("data-id", ad.dataset.id);
+    document.querySelectorAll(".addons").appendChild(clone);
+  } else {
+    const addons = document.querySelectorAll(".selected-addon");
+    addons.forEach((addon) => {
+      const attr = addon.getAttribute("data-id");
+      if (attr == ad) {
+        addon.remove()
+      }
+    })
+  }
+}
+
+function setTotal() {
+  const str = planPrice.innerHTML;
+  const res = str.replace(/\D/g, "");
+  const addonPrices = document.querySelectorAll(".selected-addon .service-price");
+  let val = 0;
+  for (let i = 0; i < addonPrices.length; i++) {
+    const str = addonPrices[i].innerHTML;
+    const res = str.replace(/\D/g, "");
+    val+= Number(res);
+  }
+  total.innerHTML = `$${val + Number(res)}/${time ? "yr" : "mo"}`;
+}
+function setTime(t) {
+return time = t;  
+}
